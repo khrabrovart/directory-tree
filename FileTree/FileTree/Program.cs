@@ -7,13 +7,16 @@ namespace FileTree
 {
     class Program
     {
-        const string VerticalLabel = "│ ";
-        const string IntermediateNodeLabel = "├─";
-        const string TerminalNodeLabel = "└─";
+        const string VerticalSign = "│ ";
+        const string IntermediateNodeSign = "├─";
+        const string TerminalNodeSign = "└─";
 
         static void Main(string[] args)
         {
-            PrintDirectoryTree(@"C:\Tests");
+            Console.Write("Enter directory path: ");
+            var path = Console.ReadLine();
+            PrintDirectoryTree(path);
+
             Console.ReadKey();
         }
 
@@ -25,6 +28,7 @@ namespace FileTree
             if (level == 0)
             {
                 ColorPrint(path, ConsoleColor.Yellow);
+                Console.WriteLine();
             }
 
             if (!Directory.Exists(path))
@@ -32,39 +36,49 @@ namespace FileTree
                 return;
             }
 
-            var files = Directory.GetFiles(path);
-            var directories = Directory.GetDirectories(path);
-
-            for (int i = 0; i < files.Length; i++)
+            try
             {
-                var fileName = Path.GetFileName(files[i]);
-                var nodeLabel = i == files.Length - 1 && directories.Length == 0
-                    ? TerminalNodeLabel 
-                    : IntermediateNodeLabel;
+                var files = Directory.GetFiles(path);
+                var directories = Directory.GetDirectories(path);
 
-                ColorPrint($"{FilledIndent(level, intermediateLevels)}{nodeLabel}{fileName}", ConsoleColor.White);
-            }
-
-            for (int i = 0; i < directories.Length; i++)
-            {
-                var directoryName = Path.GetFileName(directories[i]);
-                var isLast = i == directories.Length - 1;
-                var nodeLabel = isLast ? TerminalNodeLabel : IntermediateNodeLabel;
-
-                ColorPrint($"{FilledIndent(level, intermediateLevels)}{nodeLabel}{directoryName}", ConsoleColor.Yellow);
-
-                if (isLast)
+                for (int i = 0; i < files.Length; i++)
                 {
-                    intermediateLevels.Remove(level);
+                    var fileName = Path.GetFileName(files[i]);
+                    var isTerminal = i == files.Length - 1 && directories.Length == 0;
+                    var nodeLabel = isTerminal ? TerminalNodeSign : IntermediateNodeSign;
+
+                    Console.Write($"{CreateIndent(level, intermediateLevels)}{nodeLabel}");
+                    ColorPrint(fileName, ConsoleColor.White);
+                    Console.WriteLine();
                 }
 
-                PrintDirectoryTree(directories[i], level + 1, intermediateLevels);
-            }
+                for (int i = 0; i < directories.Length; i++)
+                {
+                    var directoryName = Path.GetFileName(directories[i]);
+                    var isTerminal = i == directories.Length - 1;
+                    var nodeLabel = isTerminal ? TerminalNodeSign : IntermediateNodeSign;
 
-            intermediateLevels.Remove(level);
+                    Console.Write($"{CreateIndent(level, intermediateLevels)}{nodeLabel}");
+                    ColorPrint(directoryName, ConsoleColor.Yellow);
+                    Console.WriteLine();
+
+                    if (isTerminal)
+                    {
+                        intermediateLevels.Remove(level);
+                    }
+
+                    PrintDirectoryTree(directories[i], level + 1, intermediateLevels);
+                }
+
+                intermediateLevels.Remove(level);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return;
+            }
         }
 
-        static string FilledIndent(int level, List<int> intermediateLevels)
+        static string CreateIndent(int level, List<int> intermediateLevels)
         {
             var sb = new StringBuilder();
 
@@ -72,7 +86,7 @@ namespace FileTree
             {
                 if (intermediateLevels.Contains(i))
                 {
-                    sb.Append(VerticalLabel);
+                    sb.Append(VerticalSign);
                 }
                 else
                 {
@@ -86,7 +100,7 @@ namespace FileTree
         static void ColorPrint(string text, ConsoleColor color)
         {
             Console.ForegroundColor = color;
-            Console.WriteLine(text);
+            Console.Write(text);
             Console.ResetColor();
         }
     }
