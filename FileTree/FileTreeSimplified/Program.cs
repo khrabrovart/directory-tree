@@ -54,6 +54,8 @@ namespace FileTreeSimplified
             }
             catch (UnauthorizedAccessException)
             {
+                // В случае, если доступ к директории запрещен и выбрасывается исключение 
+                // с типом UnauthorizedAccessException
             }
         }
 
