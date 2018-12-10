@@ -27,27 +27,33 @@ namespace FileTreeSimplified
                 ColorPrint(path, ConsoleColor.Yellow);
             }
 
-            if (!Directory.Exists(path))
+            try
             {
-                return;
+                if (!Directory.Exists(path))
+                {
+                    return;
+                }
+
+                var files = Directory.GetFiles(path);
+
+                foreach (var file in files)
+                {
+                    var fileName = Path.GetFileName(file);
+                    ColorPrint($"{GetIndent(depth)}{FileNodeSign}{fileName}", ConsoleColor.White);
+                }
+
+                var directories = Directory.GetDirectories(path);
+
+                foreach (var directory in directories)
+                {
+                    var directoryName = Path.GetFileName(directory);
+                    ColorPrint($"{GetIndent(depth)}{DirectoryNodeSign}{directoryName}", ConsoleColor.Yellow);
+
+                    PrintDirectory(directory, depth + 1);
+                }
             }
-
-            var files = Directory.GetFiles(path);
-
-            foreach (var file in files)
+            catch (UnauthorizedAccessException)
             {
-                var fileName = Path.GetFileName(file);
-                ColorPrint($"{GetIndent(depth)}{FileNodeSign}{fileName}", ConsoleColor.White);
-            }
-
-            var directories = Directory.GetDirectories(path);
-
-            foreach (var directory in directories)
-            {
-                var directoryName = Path.GetFileName(directory);
-                ColorPrint($"{GetIndent(depth)}{DirectoryNodeSign}{directoryName}", ConsoleColor.Yellow);
-
-                PrintDirectory(directory, depth + 1);
             }
         }
 
